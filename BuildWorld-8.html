@@ -1,0 +1,296 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BuildWorld</title>
+<style>
+body{margin:0;overflow:hidden;font-family:Arial;background:#72c9ff}#game{height:100vh;position:relative;overflow:hidden;background:linear-gradient(#72c9ff 0 58%,#5db34f 58%)}#world{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}.block{position:absolute;width:42px;height:42px;border:2px solid #333;border-radius:5px}.tree{position:absolute;width:22px;height:75px;background:#70452a}.tree:before{content:"";position:absolute;width:82px;height:82px;background:#27813b;border-radius:50%;left:-30px;top:-52px}#player{position:absolute;left:50%;top:52%;width:34px;height:48px;background:#3b82f6;border:3px solid white;border-radius:9px;z-index:10}#computer{position:absolute;left:68%;top:51%;z-index:8;text-align:center;color:white;cursor:pointer}.monitor{width:105px;height:70px;background:#334155;border:5px solid #111827;border-radius:8px;padding:7px}.screen{height:48px;background:#38bdf8;display:flex;align-items:center;justify-content:center;font-size:25px}.stand{width:25px;height:18px;background:#475569;margin:auto}.desk{width:125px;height:14px;background:#6b4428;margin:auto}#ui{position:absolute;z-index:20;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:8px}.panel{background:#111827dd;color:white;padding:10px;border-radius:13px}button{border:0;border-radius:9px;padding:9px;margin:2px;background:#2563eb;color:white;font-weight:bold}#tools{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);z-index:20;background:#111827dd;padding:8px;border-radius:14px}#computerScreen{display:none;position:absolute;z-index:100;inset:7%;background:#0b1220;color:white;border:7px solid #475569;border-radius:18px;padding:20px}.menu{max-width:320px;margin:auto}.menu button{display:block;width:100%;margin:12px 0}#message{position:absolute;z-index:50;bottom:105px;left:50%;transform:translateX(-50%);background:#111827e8;color:white;padding:10px 16px;border-radius:12px;opacity:0}
+
+#creatorWorkshop{position:absolute;left:8%;top:43%;z-index:7;width:210px;height:150px;cursor:pointer}
+.workshopWall{position:absolute;bottom:0;width:210px;height:115px;background:#8b5a2b;border:5px solid #4b2e18;border-radius:8px}
+.workshopRoof{position:absolute;top:5px;left:-12px;width:235px;height:55px;background:#7c3aed;border:5px solid #3b176f;transform:skewX(-12deg);border-radius:8px}
+.workshopSign{position:absolute;top:8px;left:12px;right:12px;background:#fbbf24;color:#111827;text-align:center;padding:7px;border:3px solid #111827;border-radius:8px;font-weight:bold;font-size:12px}
+.workshopDoor{position:absolute;bottom:0;left:78px;width:52px;height:58px;background:#374151;border:4px solid #111827;border-radius:7px;text-align:center;padding-top:22px}
+.workshopWindow{position:absolute;right:12px;bottom:25px;width:45px;height:40px;background:#67e8f9;border:4px solid #111827;text-align:center;padding-top:5px}
+#workshopScreen{display:none;position:absolute;z-index:110;inset:7%;background:#24103b;color:#fff;border:7px solid #a855f7;border-radius:18px;padding:20px;overflow:auto}
+
+#zoomControls{position:absolute;right:12px;top:72px;z-index:30;background:#111827dd;padding:7px;border-radius:12px}
+#zoomControls button{font-size:20px;min-width:42px}
+
+#reportStation{position:absolute;left:55%;top:35%;z-index:7;width:190px;height:135px;cursor:pointer}
+.reportWall{position:absolute;bottom:0;width:190px;height:105px;background:#e5e7eb;border:5px solid #374151;border-radius:8px}
+.reportRoof{position:absolute;top:8px;left:-10px;width:210px;height:48px;background:#dc2626;border:5px solid #7f1d1d;transform:skewX(-10deg);border-radius:8px}
+.reportSign{position:absolute;top:8px;left:10px;right:10px;background:#fff;color:#111827;text-align:center;padding:6px;border:3px solid #111827;border-radius:8px;font-weight:bold;font-size:12px}
+.reportDoor{position:absolute;bottom:0;left:69px;width:52px;height:58px;background:#374151;border:4px solid #111827;border-radius:7px;text-align:center;padding-top:17px}
+.reportBadge{position:absolute;right:12px;bottom:30px;background:#fbbf24;color:#111827;border:3px solid #111827;border-radius:50%;width:34px;height:34px;text-align:center;padding-top:5px}
+#reportScreen{display:none;position:absolute;z-index:115;inset:7%;background:#111827;color:#fff;border:7px solid #ef4444;border-radius:18px;padding:20px;overflow:auto}
+</style></head><body><div id="game"><div id="world"></div><div id="player"></div>
+
+
+<div id="reportStation" onclick="openReportStation()">
+  <div class="reportRoof"></div>
+  <div class="reportWall">
+    <div class="reportSign">🚨 REPORT STATION</div>
+    <div class="reportDoor">🚪</div>
+    <div class="reportBadge">★</div>
+  </div>
+</div>
+<div id="reportScreen">
+  <button type="button" id="reportClose" style="float:right;background:#dc2626">✕</button>
+  <div class="menu">
+    <h2>🚨 REPORT STATION</h2>
+    <p>Help make BuildWorld better.</p>
+    <button type="button" id="bugReportBtn">🐛 Report a Bug</button>
+    <button type="button" id="ideaReportBtn">💡 Suggest an Idea</button>
+    <button type="button" id="playerReportBtn">🚫 Report a Player</button>
+    <button type="button" id="reportStatusBtn">📋 Report Status</button>
+  </div>
+</div>
+<div id="creatorWorkshop" onclick="openWorkshop()">
+  <div class="workshopRoof"></div>
+  <div class="workshopWall">
+    <div class="workshopSign">🔨 CREATOR'S WORKSHOP</div>
+    <div class="workshopDoor">🚪</div>
+    <div class="workshopWindow">⚙️</div>
+  </div>
+</div>
+<div id="workshopScreen">
+  <button onclick="closeWorkshop()" style="float:right;background:#dc2626">✕</button>
+  <div class="menu">
+    <h2>🔨 CREATOR'S WORKSHOP</h2>
+    <p>Welcome to Creator's Workshop!</p>
+    <button type="button" id="wsUpgrade">🧰 Upgrade Tools</button>
+    <button type="button" id="wsMachine">🤖 Workshop Machine</button>
+    <button type="button" id="wsDesign">🎨 Design Object</button>
+    <button type="button" id="wsComputer">💻 Workshop Computer</button>
+    <button onclick="showMsg('🏆 Achievement: Visited Creator\\'s Workshop!')">🏆 Workshop Achievement</button>
+  </div>
+</div>
+<div id="computer" onclick="openComputer()"><div class="monitor"><div class="screen">💻</div></div><div class="stand"></div><div class="desk"></div><b>COMPUTER</b></div>
+<div id="ui"><div class="panel"><b>🏗️ BUILDWORLD</b><br><span id="info">Blocks: 0</span></div><div class="panel">Tap ground to build • Tap blocks to break</div></div>
+<div id="tools"><button onclick="selectBlock('grass')">🌱 Grass</button><button onclick="selectBlock('stone')">🪨 Stone</button><button onclick="selectBlock('wood')">🪵 Wood</button><button onclick="selectBlock('glass')">🪟 Glass</button></div>
+<div id="zoomControls">
+<button type="button" id="zoomOut">−</button>
+<button type="button" id="zoomReset">100%</button>
+<button type="button" id="zoomIn">+</button>
+</div>
+<div id="message"></div>
+<div id="computerScreen">
+<button type="button" id="computerClose" style="float:right;background:#dc2626">✕</button>
+<div class="menu">
+<h2>💻 BUILDWORLD COMPUTER</h2><p id="computerStatus">Computer system online.</p>
+<button type="button" id="buildMenuBtn">🏗️ Build Menu</button>
+<button type="button" id="saveBtn">💾 Save World</button>
+<button type="button" id="loadBtn">📂 Load World</button>
+<button type="button" id="mapBtn">🗺️ World Map</button>
+<button type="button" id="settingsBtn">⚙️ Settings</button>
+</div></div></div>
+<script>
+const world=document.getElementById('world'),info=document.getElementById('info');let selected='grass',blocks=[];const colors={grass:'#55a630',stone:'#777',wood:'#8b5a2b',glass:'#bdefff'};
+for(let i=0;i<10;i++){let t=document.createElement('div');t.className='tree';t.style.left=(5+Math.random()*90)+'%';t.style.top=(35+Math.random()*45)+'%';world.appendChild(t)}
+function selectBlock(t){selected=t;showMsg('Selected '+t)}
+function addBlock(x,y,t=selected){let b=document.createElement('div');b.className='block';b.style.left=x+'px';b.style.top=y+'px';b.style.background=colors[t];b.onclick=e=>{e.stopPropagation();b.remove();blocks=blocks.filter(v=>v.el!==b);update()};world.appendChild(b);blocks.push({x,y,t,el:b});update()}
+world.onclick=e=>{if(e.target===world)addBlock(Math.round((e.clientX-21)/42)*42,Math.round((e.clientY-21)/42)*42)}
+function update(){info.textContent='Blocks: '+blocks.length}
+
+
+let workshopToolsLevel=1;
+function upgradeTools(){
+  workshopToolsLevel++;
+  showMsg('🧰 Tools upgraded to Level '+workshopToolsLevel+'!');
+}
+function activateMachine(){
+  selected='stone';
+  showMsg('🤖 Machine activated! Stone is selected.');
+}
+function designObject(){
+  selected='wood';
+  showMsg('🎨 Object designer ready! Wood is selected.');
+}
+function openWorkshopComputer(){
+  closeWorkshop();
+  openComputer();
+  showMsg('💻 Workshop computer connected!');
+}
+function claimWorkshopAchievement(){
+  localStorage.setItem('creatorWorkshopAchievement','true');
+  showMsg('🏆 Achievement unlocked: Creator Workshop!');
+}
+
+function openWorkshop(){document.getElementById('workshopScreen').style.display='block'}
+function closeWorkshop(){document.getElementById('workshopScreen').style.display='none'}
+function openComputer(){document.getElementById('computerScreen').style.display='block'}
+function closeComputer(){document.getElementById('computerScreen').style.display='none'}
+function showMsg(t){let m=document.getElementById('message');m.textContent=t;m.style.opacity=1;setTimeout(()=>m.style.opacity=0,1500)}
+function saveWorld(){localStorage.setItem('buildworld',JSON.stringify(blocks.map(v=>({x:v.x,y:v.y,t:v.t}))));showMsg('💾 World saved!')}
+function loadWorld(){document.querySelectorAll('.block').forEach(b=>b.remove());blocks=[];let a=[];try{a=JSON.parse(localStorage.getItem('buildworld')||'[]')}catch(e){}a.forEach(v=>addBlock(v.x,v.y,v.t));showMsg('📂 World loaded!')}
+</script>
+<script>
+(function(){
+  function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
+  ready(function(){
+    const byId=id=>document.getElementById(id);
+    const say=t=>{ if(typeof showMsg==='function') showMsg(t); };
+
+    const close=byId('computerClose');
+    if(close) close.onclick=function(e){e.stopPropagation(); if(typeof closeComputer==='function') closeComputer();};
+
+    const build=byId('buildMenuBtn');
+    if(build) build.onclick=function(e){
+      e.stopPropagation(); selected='grass'; say('🏗️ Build Menu: Grass selected. Tap the world to build.');
+    };
+
+    const save=byId('saveBtn');
+    if(save) save.onclick=function(e){
+      e.stopPropagation();
+      if(typeof saveWorld==='function') saveWorld();
+      else say('💾 Save system ready.');
+    };
+
+    const load=byId('loadBtn');
+    if(load) load.onclick=function(e){
+      e.stopPropagation();
+      if(typeof loadWorld==='function') loadWorld();
+      else say('📂 Load system ready.');
+    };
+
+    const map=byId('mapBtn');
+    if(map) map.onclick=function(e){
+      e.stopPropagation();
+      say('🗺️ World Map: your unlimited building area is active.');
+    };
+
+    const settings=byId('settingsBtn');
+    if(settings) settings.onclick=function(e){
+      e.stopPropagation();
+      const status=byId('computerStatus');
+      if(status) status.textContent='⚙️ Settings: zoom and building controls are enabled.';
+      say('⚙️ Settings opened.');
+    };
+  });
+})();
+</script>
+
+<script>
+(function(){
+  function go(){
+    function on(id,fn){var e=document.getElementById(id);if(e)e.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();fn();});}
+    on('wsUpgrade',function(){
+      window.wsLevel=(window.wsLevel||1)+1;
+      showMsg('🧰 Tools upgraded to Level '+window.wsLevel+'!');
+    });
+    on('wsMachine',function(){
+      window.wsMachineOn=!window.wsMachineOn;
+      showMsg(window.wsMachineOn?'🤖 Workshop Machine ON!':'🤖 Workshop Machine OFF!');
+    });
+    on('wsDesign',function(){
+      selected='wood';
+      showMsg('🎨 Designer active! Wood selected for your new object.');
+    });
+    on('wsComputer',function(){
+      closeWorkshop();
+      openComputer();
+      showMsg('💻 Workshop computer connected!');
+    });
+    on('wsAchievement',function(){
+      localStorage.setItem('creatorWorkshopAchievement','true');
+      showMsg('🏆 Creator Workshop achievement unlocked!');
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();
+})();
+</script>
+
+<script>
+(function(){
+  function wire(){
+    const open=()=>document.getElementById('reportScreen').style.display='block';
+    const close=()=>document.getElementById('reportScreen').style.display='none';
+    window.openReportStation=open;
+    const c=document.getElementById('reportClose'); if(c)c.onclick=close;
+    function sendReport(subject,body){
+      const url='mailto:Idugay1996@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+      window.location.href=url;
+    }
+    const bug=document.getElementById('bugReportBtn'); if(bug)bug.onclick=()=>sendReport('BuildWorld Bug Report','Please describe the bug:\n\nWhat happened:\n\nDevice/browser:\n');
+    const idea=document.getElementById('ideaReportBtn'); if(idea)idea.onclick=()=>sendReport('BuildWorld Idea Suggestion','My BuildWorld idea:\n\n');
+    const player=document.getElementById('playerReportBtn'); if(player)player.onclick=()=>sendReport('BuildWorld Player Report','Please describe the issue and player behavior:\n\n');
+    const status=document.getElementById('reportStatusBtn'); if(status)status.onclick=()=>sendReport('BuildWorld Report Status','I would like to ask about a report I submitted.\n\n');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wire);else wire();
+})();
+</script>
+</body></html>
+<script>
+
+let toolLevel = Number(localStorage.getItem('buildworldToolLevel') || 1);
+let machineOn = false;
+let designedObjects = Number(localStorage.getItem('buildworldDesignedObjects') || 0);
+
+function workshopNotice(text){ showMsg(text); }
+
+function wireWorkshopButtons(){
+  const upgrade=document.getElementById('upgradeBtn');
+  const machine=document.getElementById('machineBtn');
+  const design=document.getElementById('designBtn');
+  const wc=document.getElementById('workComputerBtn');
+  const achievement=document.getElementById('achievementBtn');
+
+  if(upgrade) upgrade.addEventListener('click', function(e){
+    e.preventDefault(); toolLevel++;
+    localStorage.setItem('buildworldToolLevel', toolLevel);
+    workshopNotice('🧰 Tools are now Level '+toolLevel+'!');
+  });
+  if(machine) machine.addEventListener('click', function(e){
+    e.preventDefault(); machineOn=!machineOn;
+    workshopNotice(machineOn?'🤖 Workshop machine ON!':'🤖 Workshop machine OFF!');
+  });
+  if(design) design.addEventListener('click', function(e){
+    e.preventDefault(); designedObjects++;
+    localStorage.setItem('buildworldDesignedObjects', designedObjects);
+    selected='wood';
+    workshopNotice('🎨 Object '+designedObjects+' created! Wood selected.');
+  });
+  if(wc) wc.addEventListener('click', function(e){
+    e.preventDefault(); closeWorkshop(); openComputer();
+    workshopNotice('💻 Workshop computer opened!');
+  });
+  if(achievement) achievement.addEventListener('click', function(e){
+    e.preventDefault();
+    localStorage.setItem('creatorWorkshopAchievement','true');
+    workshopNotice('🏆 Creator Workshop achievement unlocked!');
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wireWorkshopButtons);
+else wireWorkshopButtons();
+
+</script>
+
+<script>
+(function(){
+  let down=false,sx=0,sy=0,ox=0,oy=0;
+  const world=document.getElementById('world'), game=document.getElementById('game');
+  function start(e){ if(e.target!==world)return; down=true; const q=e.touches?e.touches[0]:e; sx=q.clientX;sy=q.clientY; }
+  function move(e){ if(!down)return; const q=e.touches?e.touches[0]:e; ox+=q.clientX-sx;oy+=q.clientY-sy;sx=q.clientX;sy=q.clientY;world.style.transform='translate('+ox+'px,'+oy+'px)'; }
+  function end(){down=false}
+  game.addEventListener('pointerdown',start);game.addEventListener('pointermove',move);game.addEventListener('pointerup',end);game.addEventListener('pointercancel',end);
+})();
+</script>
+
+<script>
+(function(){
+  let zoom=1;
+  const game=document.getElementById('game');
+  function applyZoom(){
+    game.style.transform='scale('+zoom+')';
+    game.style.transformOrigin='center center';
+    document.getElementById('zoomReset').textContent=Math.round(zoom*100)+'%';
+  }
+  document.getElementById('zoomIn').addEventListener('click',function(e){
+    e.stopPropagation(); zoom=Math.min(2.5,+(zoom+0.1).toFixed(2)); applyZoom();
+  });
+  document.getElementById('zoomOut').addEventListener('click',function(e){
+    e.stopPropagation(); zoom=Math.max(0.5,+(zoom-0.1).toFixed(2)); applyZoom();
+  });
+  document.getElementById('zoomReset').addEventListener('click',function(e){
+    e.stopPropagation(); zoom=1; applyZoom();
+  });
+})();
+</script>

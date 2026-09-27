@@ -1,5 +1,5 @@
 # Buildworld
 Creator workshop made by chatgpt name him creator
-Downloaad
-Wxtract
-Click. Index
+How to play it 
+Click the name 
+Download it

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>BuildWorld Racer</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#111;color:#fff;touch-action:none}
+#game{position:relative;width:100%;height:100%;overflow:hidden;background:#75c9ff}
+#road{position:absolute;inset:0;background:linear-gradient(90deg,#2f7d32 0 14%,#555 14% 86%,#2f7d32 86%);}
+#road:before{content:"";position:absolute;left:50%;top:0;width:8px;height:100%;transform:translateX(-50%);background:repeating-linear-gradient(#fff 0 45px,transparent 45px 90px);opacity:.85}
+#road:after{content:"";position:absolute;left:14%;right:14%;top:0;height:100%;border-left:7px solid #eee;border-right:7px solid #eee;opacity:.9}
+#hud{position:absolute;z-index:20;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:8px}.box{background:#111c;padding:10px 14px;border-radius:14px;font-weight:bold}
+#player{position:absolute;z-index:10;width:54px;height:92px;left:50%;bottom:115px;transform:translateX(-50%);border-radius:14px 14px 9px 9px;background:#e63946;border:4px solid #fff;box-shadow:0 8px 15px #0008}
+#player:before{content:"";position:absolute;left:8px;right:8px;top:12px;height:28px;border-radius:8px;background:#7dd3fc;border:3px solid #111}
+.wheel{position:absolute;width:9px;height:25px;background:#111;border-radius:5px;top:28px}.w1{left:-8px}.w2{right:-8px}.w3{left:-8px;bottom:8px}.w4{right:-8px;bottom:8px}
+.enemy{position:absolute;z-index:8;width:50px;height:84px;border-radius:13px;background:#2563eb;border:4px solid #fff;box-shadow:0 8px 15px #0008}.enemy:before{content:"";position:absolute;left:7px;right:7px;top:10px;height:25px;border-radius:7px;background:#bae6fd;border:3px solid #111}
+#controls{position:absolute;z-index:30;left:0;right:0;bottom:15px;display:flex;justify-content:center;gap:22px}.ctrl{width:92px;height:70px;border:0;border-radius:22px;background:#111d;color:#fff;font-size:34px;font-weight:bold}.ctrl:active{transform:scale(.94);background:#333}
+#start,#gameover{position:absolute;z-index:50;inset:0;display:flex;align-items:center;justify-content:center;background:#0009;text-align:center}.card{width:min(90%,380px);background:#111f;padding:28px;border-radius:24px}.card h1{margin-top:0}.mainbtn{border:0;border-radius:15px;padding:15px 28px;font-size:20px;font-weight:bold;background:#22c55e;color:#fff}.small{opacity:.8;font-size:14px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="game">
+  <div id="road"></div>
+  <div id="hud"><div class="box">🏁 Score: <span id="score">0</span></div><div class="box">🚗 Speed: <span id="speed">1</span></div></div>
+  <div id="player"><i class="wheel w1"></i><i class="wheel w2"></i><i class="wheel w3"></i><i class="wheel w4"></i></div>
+  <div id="controls"><button class="ctrl" id="left">◀</button><button class="ctrl" id="right">▶</button></div>
+  <div id="start"><div class="card"><h1>🏎️ BuildWorld Racer</h1><p>Tap ◀ and ▶ to dodge the traffic.</p><button class="mainbtn" id="startBtn">START RACE</button><p class="small">Made for mobile • works with touch and keyboard</p></div></div>
+  <div id="gameover" class="hidden"><div class="card"><h1>💥 Race Over</h1><p>Your score: <b id="finalScore">0</b></p><button class="mainbtn" id="againBtn">RACE AGAIN</button></div></div>
+</div>
+<script>
+const player=document.getElementById('player'),game=document.getElementById('game'),scoreEl=document.getElementById('score'),speedEl=document.getElementById('speed');
+const start=document.getElementById('start'),over=document.getElementById('gameover');
+let running=false,x=50,score=0,speed=1,enemyTimer=0,last=0,enemies=[];
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function move(dir){if(!running)return;x=clamp(x+dir*4,18,82);player.style.left=x+'%'}
+function spawn(){const e=document.createElement('div');e.className='enemy';e.style.left=(18+Math.random()*64)+'%';e.style.top='-100px';game.appendChild(e);enemies.push(e)}
+function end(){running=false;document.getElementById('finalScore').textContent=Math.floor(score);over.classList.remove('hidden');enemies.forEach(e=>e.remove());enemies=[]}
+function hit(a,b){const A=a.getBoundingClientRect(),B=b.getBoundingClientRect();return !(A.right<B.left+8||A.left>B.right-8||A.bottom<B.top+8||A.top>B.bottom-8)}
+function loop(t){if(!running)return;const dt=Math.min(40,t-last||16);last=t;score+=dt*.01*speed;scoreEl.textContent=Math.floor(score);speed=1+Math.floor(score/100);speedEl.textContent=speed;enemyTimer+=dt;if(enemyTimer>Math.max(420,900-speed*55)){spawn();enemyTimer=0}
+  for(let i=enemies.length-1;i>=0;i--){const e=enemies[i];let top=e.offsetTop+(dt*.32*speed);e.style.top=top+'px';if(hit(player,e)){end();return}if(top>innerHeight+120){e.remove();enemies.splice(i,1)}}
+  requestAnimationFrame(loop)}
+function startGame(){score=0;x=50;speed=1;scoreEl.textContent='0';speedEl.textContent='1';player.style.left='50%';start.classList.add('hidden');over.classList.add('hidden');running=true;last=performance.now();requestAnimationFrame(loop)}
+document.getElementById('startBtn').onclick=startGame;document.getElementById('againBtn').onclick=startGame;
+document.getElementById('left').onpointerdown=()=>move(-1);document.getElementById('right').onpointerdown=()=>move(1);
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')move(-1);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')move(1);if(e.key===' '&&!running)startGame()});
+</script>
+</body>
+</html>
